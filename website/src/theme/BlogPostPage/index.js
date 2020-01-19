@@ -43,7 +43,7 @@ function BlogPostPage(props) {
             </div>
           </div>
         </header>
-        <div className="container container--narrow container--bleed margin-vert--xl">
+        <div className="container container--narrow long-form margin-vert--xl">
           <section className="markdown">
             <MDXProvider components={MDXComponents}><BlogPostContents /></MDXProvider>
           </section>

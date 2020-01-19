@@ -59,6 +59,7 @@
   --ifm-contents-padding-left: var(--ifm-spacing-horizontal);
   --ifm-font-family-base: -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
   --ifm-font-family-monospace: "Source Code Pro", Menlo, monospace;
+  --ifm-font-family-serif: "Source Serif Pro", Constantia, Lucida Bright, Lucidabright, "Lucida Serif", Lucida, "DejaVu Serif", "Bitstream Vera Serif", "Liberation Serif", Georgia, serif;
   --ifm-font-size-base: 16px;
   --ifm-footer-background-color: var(--ifm-background-color);
   --ifm-footer-padding-vertical: calc(var(--ifm-spacing-vertical) * 4);
@@ -383,27 +384,6 @@ table.comparison tr td.bar.vector .bar {
   max-width: 760px;
 }
 
-.container--bleed > .bleed,
-.container--bleed > section > p > img,
-.container--bleed > section > .code-header,
-.container--bleed > section > pre {
-  position: relative;
-  left: calc( -1 * ( ( ( var(--ifm-container-width) - 760px ) / 2 ) + var(--ifm-spacing-vertical)) );
-  max-width: none;
-  width: var(--ifm-container-width);
-}
-
-@media (max-width: 996px) {
-  .container--bleed > .bleed,
-  .container--bleed > section > p > img,
-  .container--bleed > section > .code-header,
-  .container--bleed > section > pre {
-    position: static;
-    max-width: 100%;
-    width: auto;
-  }
-}
-
 /**
  * domain-bg
  */
@@ -608,6 +588,19 @@ header h1 {
   font-size: 0.9rem;
   margin-top: 0.3rem;
 }
+.hero .hero--component-icons {
+  margin-bottom: var(--ifm-spacing-vertical);
+}
+.hero .hero--component-icons .icon {
+  border-radius: 1.5em;
+  margin: 0 auto;
+  padding: 1.5em;
+  width: 135px;
+  height: 135px;
+}
+.hero .hero--component-icons .icon img {
+  width: 100%;
+}
 .hero .hero--buttons {
   --ifm-button-padding-vertical: 0.5rem;
   --ifm-button-padding-horizontal: 4rem;
@@ -626,6 +619,15 @@ header h1 {
   flex-direction: column;
   justify-content: center;
   min-height: calc( 100vh - var(--ifm-navbar-height) );
+}
+.hero.hero--animated-graph {
+  padding: 0;
+  margin: 0;
+  overflow: hidden;
+}
+.hero.hero--animated-graph .overlay {
+  margin-top: -15.25em;
+  margin-bottom: 4em;
 }
 @media (max-width: 996px) {
   .hero {
@@ -726,6 +728,40 @@ input[type="text"]:focus {
   border-bottom: 1px solid var(--ifm-color-warning);
   padding-bottom: 5px;
   font-size: 0.8rem;
+}
+
+/**
+ * long-form
+ *
+ * Used for long form content, such as a blog post, guide, etc. This styles
+ * the content to increase the first leteter size, bleed code examples, and
+ * more styles that make the content visually interesting.
+ */
+
+.long-form > .bleed,
+.long-form > section > p > img,
+.long-form > section > .code-header,
+.long-form > section > pre {
+  position: relative;
+  left: calc( -1 * ( ( ( var(--ifm-container-width) - 760px ) / 2 ) + var(--ifm-spacing-vertical)) );
+  max-width: none;
+  width: var(--ifm-container-width);
+}
+
+.long-form p:first-child::first-letter {
+  float: left;
+  font-size: 3.25em;
+  padding: 0.2em 0.2em 0 0;
+}
+@media (max-width: 996px) {
+  .long-form > .bleed,
+  .long-form > section > p > img,
+  .long-form > section > .code-header,
+  .long-form > section > pre {
+    position: static;
+    max-width: 100%;
+    width: auto;
+  }
 }
 
 /**
