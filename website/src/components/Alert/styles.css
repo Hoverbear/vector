@@ -1,7 +1,8 @@
 .alert {
-  box-shadow: var(--ifm-panel-box-shadow);
+  border-radius: 0;
   color: var(--ifm-color-content) !important;
   font-size: 95%;
+  font-weight: 600;
   margin-bottom: calc( var(--ifm-spacing-vertical) * 2 );
   padding-left: 5em;
 }
@@ -23,7 +24,6 @@
 .alert.alert--primary,
 .alert.alert--success,
 .alert.alert--warning {
-  background: var(--ifm-panel-background) !important;
   border: 0px none;
 }
 
@@ -36,7 +36,8 @@
 }
 
 .alert.alert--primary {
-  border-left: 2px solid var(--ifm-color-primary);
+  background: rgba(var(--ifm-color-primary-rgb), 0.25);
+  border-left: 6px solid var(--ifm-color-primary);
 }
 
 .alert.alert--success {

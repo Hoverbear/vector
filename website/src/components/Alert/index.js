@@ -21,7 +21,7 @@ function Alert({children, fill, icon, type}) {
 
   return (
     <div className={classnames('alert', `alert--${type}`, {'alert--fill': fill})} role="alert">
-      <i className={classnames('feather', `icon-${icon || typeIcon}`)}></i>
+      {icon !== false && <i className={classnames('feather', `icon-${icon || typeIcon}`)}></i>}
       {children}
     </div>
   );

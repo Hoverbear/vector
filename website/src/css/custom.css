@@ -219,9 +219,28 @@ a.badge:hover {
  */
 
 blockquote {
-  border-left: 4px solid var(--ifm-hr-border-color);
-  color: var(--ifm-color-emphasis-400);
-  padding: 0 0 0 1.5rem;
+  background: var(--ifm-color-emphasis-50);
+  border-left: 5px solid var(--ifm-hr-border-color);
+  color: var(--ifm-heading-color);
+  font-size: 1.2em;
+  font-weight: 600;
+  margin-bottom: calc( var(--ifm-spacing-vertical) * 2 );
+  padding: 1.5em;
+}
+
+blockquote.blockquote--primary {
+  background: rgba(var(--ifm-color-primary-rgb), 0.25);
+  border-left-color: var(--ifm-color-primary);
+  font-weight: 600;
+}
+
+blockquote > p {
+  margin-bottom: 0;
+}
+
+blockquote > footer {
+  font-style: italic;
+  font-weight: normal;
 }
 
 /**
@@ -368,6 +387,36 @@ table.comparison tr td.bar.vector .bar {
   table.comparison td.description {
     display: none;
   }
+}
+
+/**
+ * component-icons
+ *
+ * Component icons used in the hero for each component page and it's
+ * combination.
+ */
+
+.component-icons {
+  display: flex;
+  margin: 0 auto var(--ifm-spacing-vertical) auto;
+  max-height: 135px;
+  max-width: 300px;
+}
+.component-icons > * {
+  background-color: rgba(var(--ifm-panel-background-rgb), 0.75) !important;
+  border-radius: 2rem !important;
+  flex: 1 1;
+  margin-right: var(--ifm-spacing-vertical);
+  padding: 1.5em;
+}
+.component-icons > *:last-child {
+  margin-right: 0;
+}
+.component-icons > a {
+  font-size: 2.5em;
+}
+.component-icons .icon img {
+  height: 100%;
 }
 
 /**
@@ -747,8 +796,7 @@ input[type="text"]:focus {
   max-width: none;
   width: var(--ifm-container-width);
 }
-
-.long-form p:first-child::first-letter {
+.long-form p:first-of-type::first-letter {
   float: left;
   font-size: 3.25em;
   padding: 0.2em 0.2em 0 0;
@@ -1008,6 +1056,12 @@ input[type="text"]:focus {
 .panel .panel--description {
   font-size: 0.95em;
   opacity: 0.5;
+}
+a.panel:hover {
+  background: var(--ifm-panel-background-active);
+  border-color: var(--ifm-color-primary);
+  box-shadow: var(--ifm-panel-box-shadow-active);
+  text-decoration: none;
 }
 
 /**
