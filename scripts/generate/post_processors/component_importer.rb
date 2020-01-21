@@ -13,6 +13,7 @@ module PostProcessors
       'Diagram' => "import Diagram from '@site/src/components/Diagram';",
       'Fields' => "import Fields from '@site/src/components/Fields';",
       'Field' => "import Field from '@site/src/components/Field';",
+      'InstallationCommand' => "import Jump from '@site/src/components/InstallationCommand';",
       'Jump' => "import Jump from '@site/src/components/Jump';",
       'Step' => "import Step from '@site/src/components/Step';",
       'Steps' => "import Steps from '@site/src/components/Steps';",

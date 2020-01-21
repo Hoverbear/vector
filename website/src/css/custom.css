@@ -1159,49 +1159,49 @@ header + section.shade {
  * headings. This is used for options, fields, or step-by-step guides.
  */
 
-.section-list {
+div.section-list {
   border-left: 1px solid var(--ifm-hr-border-color);
   margin-left: 0.25em;
 }
-.section-list > .section {
+div.section-list > .section {
   border-radius: 5px;
   font-size: 0.95em;
   padding-bottom: calc( var(--ifm-spacing-vertical) / 1.5 );
   padding-left: var(--ifm-spacing-horizontal);
 }
-.section-list > .section:last-child {
+div.section-list > .section:last-child {
   padding-bottom: 0
 }
-.section-list > .section > .badges {
+div.section-list > .section > .badges {
   float: right;
   margin-top: -0.25em;
   text-align: right;
 }
-.section-list > .section > .badges .badge {
+div.section-list > .section > .badges .badge {
   font-size: 0.7em;
   margin-left: 3px;
 }
-.section-list > .section > .badges .badge:first-child {
+div.section-list > .section > .badges .badge:first-child {
   margin-left: 0;
 }
-.section-list > .section > h3,
-.section-list > .section > h4,
-.section-list > .section > h5,
-.section-list > .section > h6 {
+div.section-list > .section > h3,
+div.section-list > .section > h4,
+div.section-list > .section > h5,
+div.section-list > .section > h6 {
   margin-bottom: 1em;
 }
-.section-list > .section > h3 .hash-link,
-.section-list > .section > h4 .hash-link,
-.section-list > .section > h5 .hash-link,
-.section-list > .section > h6 .hash-link {
+div.section-list > .section > h3 .hash-link,
+div.section-list > .section > h4 .hash-link,
+div.section-list > .section > h5 .hash-link,
+div.section-list > .section > h6 .hash-link {
   margin-left: calc((var(--ifm-spacing-horizontal) * -1.75) - var(--ifm-spacing-horizontal)) !important;
   padding-right: 3em;
 }
-.section-list:not(.section-list--no-bullet) > .section > h3::before,
-.section-list:not(.section-list--no-bullet) > .section > h4::before,
-.section-list:not(.section-list--no-bullet) > .section > h5::before,
-.section-list:not(.section-list--no-bullet) > .section > h6::before,
-.section-list > .section > .section--bullet {
+div.section-list:not(.section-list--no-bullet) > .section > h3::before,
+div.section-list:not(.section-list--no-bullet) > .section > h4::before,
+div.section-list:not(.section-list--no-bullet) > .section > h5::before,
+div.section-list:not(.section-list--no-bullet) > .section > h6::before,
+div.section-list > .section > .section--bullet {
   content: "• ";
   float: left;
   display: block;
@@ -1209,17 +1209,17 @@ header + section.shade {
   margin-left: calc( var(--ifm-spacing-horizontal) * -2 );
   text-align: center;
 }
-.section-list > .section:hover > h3 > .hash-link,
-.section-list > .section:hover > h4 > .hash-link,
-.section-list > .section:hover > h5 > .hash-link,
-.section-list > .section:hover > h6 > .hash-link {
-  opacity: 1;
+div.section-list > .section:hover > h3 > .hash-link,
+div.section-list > .section:hover > h4 > .hash-link,
+div.section-list > .section:hover > h5 > .hash-link,
+div.section-list > .section:hover > h6 > .hash-link {
+  opacity: 1; 
 }
-.section-list > .section > .sub__title {
+div.section-list > .section > .sub__title {
   margin-top: -0.4em;
   margin-bottom: 0.25em;
 }
-.section-list > .section .info {
+div.section-list > .section .info {
   border-left: 1px solid var(--ifm-hr-border-color);
   color: var(--ifm-color-content-secondary);
   font-size: 0.9em;
@@ -1228,7 +1228,7 @@ header + section.shade {
   margin-left: 0.25em;
   padding-left: var(--ifm-spacing-horizontal);
 }
-.section-list > .section .info > div:before {
+div.section-list > .section .info > div:before {
   content: "• ";
   float: left;
   display: block;
@@ -1236,34 +1236,77 @@ header + section.shade {
   margin-left: calc( var(--ifm-spacing-horizontal) * -2 );
   text-align: center;
 }
-.section-list > .section .info .show-more {
+div.section-list > .section .info .show-more {
   color: var(--ifm-color-primary);
   cursor: pointer;
 }
-.section-list > .section .info .examples {
+div.section-list > .section .info .examples {
   margin-top: 0.5em;
 }
-.section-list.section-list--lg > .section {
+div.section-list.section-list--lg > .section {
   margin-top: calc( var(--ifm-spacing-vertical) * 2 );
 }
-.section-list.section-list--compact > .section {
+div.section-list.section-list--compact > .section {
   padding-top: calc( var(--ifm-spacing-vertical) / 4 );
   padding-bottom: calc( var(--ifm-spacing-vertical) / 4 );
 }
-.section-list.section-list--compact > .section > h4 {
+div.section-list.section-list--compact > .section > h4 {
   font-weight: normal;
   margin: 0;
 }
-.section-list.section-list--compact > .section > h4 .badge {
+div.section-list.section-list--compact > .section > h4 .badge {
 
 }
-.section-list.section-list--compact > .section:last-child > h4 {
+div.section-list.section-list--compact > .section:last-child > h4 {
   margin-bottom: var(--ifm-spacing-vertical);
 }
-.section-list.section-list--hover > .section:hover {
+div.section-list.section-list--hover > .section:hover {
   background: var(--ifm-panel-background);
 }
 
+/**
+ * sections
+ *
+ * Like .section-list above but uses ol and ul elements. This is the precursor
+ * to .section-list and will hopefully replace it.
+ */
+
+.sections {
+  border-left: 1px solid var(--ifm-hr-border-color);
+  counter-reset: sections-counter;
+  list-style: none;
+  margin-left: 0.75em;
+  padding-left: 1.75em;
+}
+.sections > li {
+  counter-increment: sections-counter;
+  margin-bottom: calc(var(--ifm-spacing-vertical) * 4 );
+}
+.sections > li:last-child {
+  margin-bottom: var(--ifm-spacing-vertical);
+}
+.sections > li:before {
+  background: var(--ifm-heading-color);
+  border-radius: 100%;
+  color: var(--ifm-background-color);
+  content: counter(sections-counter);
+  float: left;
+  min-width: 0.75em;
+  padding: 0.1em 0.35em;
+  text-align: center;
+}
+.sections.sections--h3 > li:before {
+  font-size: var(--ifm-h3-font-size);
+  font-weight: var(--ifm-heading-font-weight);
+  line-height: var(--ifm-heading-line-height);
+  margin: -0.1em 0 0 -2.25em;
+}
+.sections.sections--h3 > li a.hash-link {
+  margin-left: -3.5em;
+}
+.sections.sections--h3 > li > h3 {
+  margin-bottom: var(--ifm-spacing-vertical);
+}
 /**
  * sidebar
  *
