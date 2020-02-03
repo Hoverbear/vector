@@ -19,6 +19,7 @@ pub mod remove_fields;
 pub mod remove_tags;
 pub mod sampler;
 pub mod split;
+pub mod protobuf;
 pub mod tokenizer;
 
 pub trait Transform: Send {

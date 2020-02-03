@@ -1,6 +1,6 @@
 use super::util::SinkExt;
 use crate::{
-    event::{self, Event},
+    event::{self, Event, LogEvent},
     topology::config::{DataType, SinkConfig, SinkContext, SinkDescription},
 };
 use futures::{future, Sink};
@@ -28,7 +28,94 @@ impl Default for Target {
 pub struct ConsoleSinkConfig {
     #[serde(default)]
     pub target: Target,
-    pub encoding: Encoding,
+    #[serde(deserialize_with = "from_encoding_config")]
+    pub encoding: EncodingConfig,
+}
+
+use serde::de::{
+    self,
+    MapAccess,
+    Visitor,
+    Deserializer,
+    IntoDeserializer,
+};
+use std::{
+    marker::PhantomData,
+    fmt::{self, Debug},
+};
+
+#[derive(Deserialize, Serialize, Debug, Eq, PartialEq, Clone)]
+pub struct EncodingConfig {
+    format: Encoding,
+
+    // TODO: Consider a HashSet... But Vec is faster at small sizes!
+    // TODO: Serde does not offer mutual exclusivity?
+    #[serde(default)]
+    only_fields: Option<Vec<String>>,
+    // TODO: Serde does not offer mutual exclusivity?
+    #[serde(default)]
+    except_fields: Option<Vec<String>>,
+}
+
+impl EncodingConfig {
+    fn rework(&self, mut event: LogEvent) -> LogEvent {
+        // TODO: This has kind of sharp usability. Maybe there should be a startup error if both
+        // sets exist.
+        if let Some(fields) = self.only_fields {
+
+        } else if let Some(fields) = self.except_fields {
+
+        }
+    }
+}
+
+// Derived from https://serde.rs/string-or-struct.html
+fn from_encoding_config<'de, D>(deserializer: D) -> Result<EncodingConfig, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    // This is a Visitor that forwards string types to T's `FromStr` impl and
+    // forwards map types to T's `Deserialize` impl. The `PhantomData` is to
+    // keep the compiler from complaining about T being an unused generic type
+    // parameter. We need T in order to know the Value type for the Visitor
+    // impl.
+    struct StringOrStruct(PhantomData<fn() -> EncodingConfig>);
+
+    impl<'de> Visitor<'de> for StringOrStruct {
+        type Value = EncodingConfig;
+
+        fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+            formatter.write_str("string or map")
+        }
+
+        fn visit_str<E>(self, value: &str) -> Result<Self::Value, E>
+        where
+            E: de::Error,
+        {
+            Ok(EncodingConfig {
+                format: Encoding::deserialize(value.into_deserializer())?,
+                only_fields: Default::default(),
+                except_fields: Default::default(),
+            })
+        }
+
+        fn visit_map<M>(self, map: M) -> Result<Self::Value, M::Error>
+        where
+            M: MapAccess<'de>,
+        {
+            // `MapAccessDeserializer` is a wrapper that turns a `MapAccess`
+            // into a `Deserializer`, allowing it to be used as the input to T's
+            // `Deserialize` implementation. T then deserializes itself using
+            // the entries from the map visitor.
+            let deserialized = Deserialize::deserialize(de::value::MapAccessDeserializer::new(map))?;
+            if deserialized.only_fields.is_some() && deserialized.except_fields() {
+
+            }
+
+        }
+    }
+
+    deserializer.deserialize_any(StringOrStruct(PhantomData))
 }
 
 #[derive(Deserialize, Serialize, Debug, Eq, PartialEq, Clone)]
@@ -69,18 +156,21 @@ impl SinkConfig for ConsoleSinkConfig {
     }
 }
 
-fn encode_event(event: Event, encoding: &Encoding) -> Result<String, ()> {
+fn encode_event(event: Event, encoding: &EncodingConfig) -> Result<String, ()> {
     match event {
-        Event::Log(log) => match encoding {
-            Encoding::Json => {
-                serde_json::to_string(&log.unflatten()).map_err(|e| panic!("Error encoding: {}", e))
-            }
-            Encoding::Text => {
-                let s = log
-                    .get(&event::MESSAGE)
-                    .map(|v| v.to_string_lossy())
-                    .unwrap_or_else(|| "".into());
-                Ok(s)
+        Event::Log(log) => {
+            let log = encoding.rework(log);
+            match encoding.format {
+                Encoding::Json => {
+                    serde_json::to_string(&log.unflatten()).map_err(|e| panic!("Error encoding: {}", e))
+                }
+                Encoding::Text => {
+                    let s = log
+                        .get(&event::MESSAGE)
+                        .map(|v| v.to_string_lossy())
+                        .unwrap_or_else(|| "".into());
+                    Ok(s)
+                }
             }
         },
         Event::Metric(metric) => serde_json::to_string(&metric).map_err(|_| ()),
