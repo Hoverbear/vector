@@ -32,17 +32,12 @@ pub struct ConsoleSinkConfig {
     pub encoding: EncodingConfig,
 }
 
-use serde::de::{
-    self,
-    MapAccess,
-    Visitor,
-    Deserializer,
-    IntoDeserializer,
-};
+use serde::de::{self, Deserializer, IntoDeserializer, MapAccess, Visitor};
 use std::{
-    marker::PhantomData,
     fmt::{self, Debug},
+    marker::PhantomData,
 };
+use string_cache::DefaultAtom as Atom;
 
 #[derive(Deserialize, Serialize, Debug, Eq, PartialEq, Clone)]
 pub struct EncodingConfig {
@@ -51,20 +46,34 @@ pub struct EncodingConfig {
     // TODO: Consider a HashSet... But Vec is faster at small sizes!
     // TODO: Serde does not offer mutual exclusivity?
     #[serde(default)]
-    only_fields: Option<Vec<String>>,
+    only_fields: Option<Vec<Atom>>,
     // TODO: Serde does not offer mutual exclusivity?
     #[serde(default)]
-    except_fields: Option<Vec<String>>,
+    except_fields: Option<Vec<Atom>>,
 }
 
 impl EncodingConfig {
+    pub const fn new(
+        format: Encoding,
+        only_fields: Option<Vec<Atom>>,
+        except_fields: Option<Vec<Atom>>,
+    ) -> Self {
+        EncodingConfig {
+            format,
+            only_fields,
+            except_fields,
+        }
+    }
     fn rework(&self, mut event: LogEvent) -> LogEvent {
-        // TODO: This has kind of sharp usability. Maybe there should be a startup error if both
-        // sets exist.
-        if let Some(fields) = self.only_fields {
-
-        } else if let Some(fields) = self.except_fields {
-
+        if let Some(ref fields) = self.only_fields {
+            event.drain().filter(|(k, _v)| fields.contains(k)).collect()
+        } else if let Some(ref fields) = self.except_fields {
+            fields.iter().for_each(|f| {
+                event.remove(f);
+            });
+            event
+        } else {
+            event
         }
     }
 }
@@ -107,11 +116,7 @@ where
             // into a `Deserializer`, allowing it to be used as the input to T's
             // `Deserialize` implementation. T then deserializes itself using
             // the entries from the map visitor.
-            let deserialized = Deserialize::deserialize(de::value::MapAccessDeserializer::new(map))?;
-            if deserialized.only_fields.is_some() && deserialized.except_fields() {
-
-            }
-
+            Deserialize::deserialize(de::value::MapAccessDeserializer::new(map))
         }
     }
 
@@ -159,11 +164,12 @@ impl SinkConfig for ConsoleSinkConfig {
 fn encode_event(event: Event, encoding: &EncodingConfig) -> Result<String, ()> {
     match event {
         Event::Log(log) => {
+            println!("Before: {:?}", log);
             let log = encoding.rework(log);
+            println!("After: {:?}", log);
             match encoding.format {
-                Encoding::Json => {
-                    serde_json::to_string(&log.unflatten()).map_err(|e| panic!("Error encoding: {}", e))
-                }
+                Encoding::Json => serde_json::to_string(&log.unflatten())
+                    .map_err(|e| panic!("Error encoding: {}", e)),
                 Encoding::Text => {
                     let s = log
                         .get(&event::MESSAGE)
@@ -172,22 +178,26 @@ fn encode_event(event: Event, encoding: &EncodingConfig) -> Result<String, ()> {
                     Ok(s)
                 }
             }
-        },
+        }
         Event::Metric(metric) => serde_json::to_string(&metric).map_err(|_| ()),
     }
 }
 
 #[cfg(test)]
 mod test {
-    use super::{encode_event, Encoding};
+    use super::{encode_event, Encoding, EncodingConfig};
     use crate::event::metric::{Metric, MetricKind, MetricValue};
     use crate::event::Event;
     use chrono::{offset::TimeZone, Utc};
+    const DEFAULT_ENCODING_CONFIG: EncodingConfig = EncodingConfig::new(Encoding::Text, None, None);
 
     #[test]
     fn encodes_raw_logs() {
         let event = Event::from("foo");
-        assert_eq!(Ok("foo".to_string()), encode_event(event, &Encoding::Text));
+        assert_eq!(
+            Ok("foo".to_string()),
+            encode_event(event, &DEFAULT_ENCODING_CONFIG)
+        );
     }
 
     #[test]
@@ -205,7 +215,7 @@ mod test {
         });
         assert_eq!(
             Ok(r#"{"name":"foos","timestamp":"2018-11-14T08:09:10.000000011Z","tags":{"key":"value"},"kind":"incremental","value":{"type":"counter","value":100.0}}"#.to_string()),
-            encode_event(event, &Encoding::Text)
+            encode_event(event, &DEFAULT_ENCODING_CONFIG)
         );
     }
 
@@ -222,7 +232,7 @@ mod test {
         });
         assert_eq!(
             Ok(r#"{"name":"users","timestamp":null,"tags":null,"kind":"incremental","value":{"type":"set","values":["bob"]}}"#.to_string()),
-            encode_event(event, &Encoding::Text)
+            encode_event(event, &DEFAULT_ENCODING_CONFIG)
         );
     }
 
@@ -240,7 +250,7 @@ mod test {
         });
         assert_eq!(
             Ok(r#"{"name":"glork","timestamp":null,"tags":null,"kind":"incremental","value":{"type":"distribution","values":[10.0],"sample_rates":[1]}}"#.to_string()),
-            encode_event(event, &Encoding::Text)
+            encode_event(event, &DEFAULT_ENCODING_CONFIG)
         );
     }
 }
