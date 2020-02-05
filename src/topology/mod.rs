@@ -531,7 +531,10 @@ fn handle_errors(
 
 #[cfg(test)]
 mod tests {
-    use crate::sinks::console::{ConsoleSinkConfig, Encoding, EncodingConfig, Target};
+    use crate::sinks::{
+        console::{ConsoleSinkConfig, Encoding, Target},
+        util::encoding::EncodingConfig,
+    };
     use crate::sources::socket::SocketConfig;
     use crate::test_util::{next_addr, runtime};
     use crate::topology;

@@ -1,4 +1,5 @@
 use super::util::SinkExt;
+use crate::sinks::util::encoding::{from_encoding_config, EncodingConfig};
 use crate::{
     event::{self, Event, LogEvent},
     topology::config::{DataType, SinkConfig, SinkContext, SinkDescription},
@@ -29,98 +30,7 @@ pub struct ConsoleSinkConfig {
     #[serde(default)]
     pub target: Target,
     #[serde(deserialize_with = "from_encoding_config")]
-    pub encoding: EncodingConfig,
-}
-
-use serde::de::{self, Deserializer, IntoDeserializer, MapAccess, Visitor};
-use std::{
-    fmt::{self, Debug},
-    marker::PhantomData,
-};
-use string_cache::DefaultAtom as Atom;
-
-#[derive(Deserialize, Serialize, Debug, Eq, PartialEq, Clone)]
-pub struct EncodingConfig {
-    format: Encoding,
-
-    // TODO: Consider a HashSet... But Vec is faster at small sizes!
-    // TODO: Serde does not offer mutual exclusivity?
-    #[serde(default)]
-    only_fields: Option<Vec<Atom>>,
-    // TODO: Serde does not offer mutual exclusivity?
-    #[serde(default)]
-    except_fields: Option<Vec<Atom>>,
-}
-
-impl EncodingConfig {
-    pub const fn new(
-        format: Encoding,
-        only_fields: Option<Vec<Atom>>,
-        except_fields: Option<Vec<Atom>>,
-    ) -> Self {
-        EncodingConfig {
-            format,
-            only_fields,
-            except_fields,
-        }
-    }
-    fn rework(&self, mut event: LogEvent) -> LogEvent {
-        if let Some(ref fields) = self.only_fields {
-            event.drain().filter(|(k, _v)| fields.contains(k)).collect()
-        } else if let Some(ref fields) = self.except_fields {
-            fields.iter().for_each(|f| {
-                event.remove(f);
-            });
-            event
-        } else {
-            event
-        }
-    }
-}
-
-// Derived from https://serde.rs/string-or-struct.html
-fn from_encoding_config<'de, D>(deserializer: D) -> Result<EncodingConfig, D::Error>
-where
-    D: Deserializer<'de>,
-{
-    // This is a Visitor that forwards string types to T's `FromStr` impl and
-    // forwards map types to T's `Deserialize` impl. The `PhantomData` is to
-    // keep the compiler from complaining about T being an unused generic type
-    // parameter. We need T in order to know the Value type for the Visitor
-    // impl.
-    struct StringOrStruct(PhantomData<fn() -> EncodingConfig>);
-
-    impl<'de> Visitor<'de> for StringOrStruct {
-        type Value = EncodingConfig;
-
-        fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
-            formatter.write_str("string or map")
-        }
-
-        fn visit_str<E>(self, value: &str) -> Result<Self::Value, E>
-        where
-            E: de::Error,
-        {
-            Ok(EncodingConfig {
-                format: Encoding::deserialize(value.into_deserializer())?,
-                only_fields: Default::default(),
-                except_fields: Default::default(),
-            })
-        }
-
-        fn visit_map<M>(self, map: M) -> Result<Self::Value, M::Error>
-        where
-            M: MapAccess<'de>,
-        {
-            // `MapAccessDeserializer` is a wrapper that turns a `MapAccess`
-            // into a `Deserializer`, allowing it to be used as the input to T's
-            // `Deserialize` implementation. T then deserializes itself using
-            // the entries from the map visitor.
-            Deserialize::deserialize(de::value::MapAccessDeserializer::new(map))
-        }
-    }
-
-    deserializer.deserialize_any(StringOrStruct(PhantomData))
+    pub encoding: EncodingConfig<Encoding>,
 }
 
 #[derive(Deserialize, Serialize, Debug, Eq, PartialEq, Clone)]
@@ -161,7 +71,7 @@ impl SinkConfig for ConsoleSinkConfig {
     }
 }
 
-fn encode_event(event: Event, encoding: &EncodingConfig) -> Result<String, ()> {
+fn encode_event(event: Event, encoding: &EncodingConfig<Encoding>) -> Result<String, ()> {
     match event {
         Event::Log(log) => {
             println!("Before: {:?}", log);
@@ -185,11 +95,16 @@ fn encode_event(event: Event, encoding: &EncodingConfig) -> Result<String, ()> {
 
 #[cfg(test)]
 mod test {
-    use super::{encode_event, Encoding, EncodingConfig};
+    use super::{encode_event, Encoding};
     use crate::event::metric::{Metric, MetricKind, MetricValue};
     use crate::event::Event;
+    use crate::sinks::util::encoding::EncodingConfig;
     use chrono::{offset::TimeZone, Utc};
-    const DEFAULT_ENCODING_CONFIG: EncodingConfig = EncodingConfig::new(Encoding::Text, None, None);
+    use lazy_static::lazy_static;
+    lazy_static! {
+        static ref DEFAULT_ENCODING_CONFIG: EncodingConfig<Encoding> =
+            EncodingConfig::new(Encoding::Text, None, None);
+    }
 
     #[test]
     fn encodes_raw_logs() {
