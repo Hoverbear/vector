@@ -357,8 +357,11 @@ mod test {
             experiment_no_truncations(actions);
             TestResult::passed()
         }
+        // Windows performance on this test is particularly bad.
+        // Limit the number of runs to make interactive development faster.
+        let num_tests = if cfg!(windows) { 100 } else { 10000 };
         QuickCheck::new()
-            .tests(10000)
+            .tests(num_tests)
             .max_tests(100000)
             .quickcheck(inner as fn(Vec<FWAction>) -> TestResult);
     }
@@ -369,8 +372,11 @@ mod test {
             experiment(actions);
             TestResult::passed()
         }
+        // Windows performance on this test is particularly bad.
+        // Limit the number of runs to make interactive development faster.
+        let num_tests = if cfg!(windows) { 100 } else { 10000 };
         QuickCheck::new()
-            .tests(10000)
+            .tests(num_tests)
             .max_tests(100000)
             .quickcheck(inner as fn(Vec<FWAction>) -> TestResult);
     }
